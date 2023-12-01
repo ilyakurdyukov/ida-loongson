@@ -226,7 +226,7 @@ class loong64_processor_t(processor_t):
     maptbl_arith_imm = ['slti', 'sltui', 'addi.w', 'addi.d',
         'lu52i.d', 'andi', 'ori', 'xori']
 
-    maptbl_pcadd = ['addu16i.d', 'addu16i.d', 'lu12i.w', 'lu12i.d',
+    maptbl_pcadd = ['addu16i.d', 'addu16i.d', 'lu12i.w', 'lu32i.d',
         'pcaddi', 'pcalau12i', 'pcaddu12i', 'pcaddu18i']
 
     maptbl_mem14 = ['ll.w', 'sc.w', 'll.d', 'sc.d',
@@ -243,8 +243,8 @@ class loong64_processor_t(processor_t):
         'fldx.s', 'fldx.d', 'fstx.s', 'fstx.d']
 
     maptbl_privileged = [
-        'iocsrrd.b', 'iocsrrd.w', 'iocsrrd.h', 'iocsrrd.d',
-        'iocsrwr.b', 'iocsrwr.w', 'iocsrwr.h', 'iocsrwr.d',
+        'iocsrrd.b', 'iocsrrd.h', 'iocsrrd.w', 'iocsrrd.d',
+        'iocsrwr.b', 'iocsrwr.h', 'iocsrwr.w', 'iocsrwr.d',
         'tlbclr', 'tlbflush', 'tlbsrch', 'tlbrd',
         'tlbwr', 'tlbfill', 'ertn']
 
@@ -539,7 +539,7 @@ class loong64_processor_t(processor_t):
             insn.Op3.type = o_reg
             insn.Op3.reg = rK
             insn.Op4.type = o_imm
-            insn.Op4.value = raw >> 15 & 3 # sa2
+            insn.Op4.value = (raw >> 15 & 3) + 1 # sa2
             if raw & 0x20000 == 0:
                 insn.itype = self.name2icode['alsl.w']
             else:
@@ -594,7 +594,7 @@ class loong64_processor_t(processor_t):
                 insn.Op3.type = o_reg
                 insn.Op3.reg = rK
                 insn.Op4.type = o_imm
-                insn.Op4.value = raw >> 15 & 3 # sa2
+                insn.Op4.value = (raw >> 15 & 3) + 1 # sa2
             else:
                 if opc2 == 0x14:
                     insn.itype = self.name2icode['break']
@@ -774,7 +774,7 @@ class loong64_processor_t(processor_t):
                 if rJ == 0:
                     insn.itype = self.name2icode['csrrd']
                 else:
-                    insn.itype = self.name2icode['csrrw']
+                    insn.itype = self.name2icode['csrwr']
             else:
                 insn.itype = self.name2icode['csrxchg']
                 insn.Op2.type = o_reg
@@ -831,7 +831,7 @@ class loong64_processor_t(processor_t):
                 insn.Op2.type = o_reg
                 insn.Op2.reg = rJ
                 insn.Op3.type = o_reg
-                insn.Op3.value = rK
+                insn.Op3.reg = rK
             else:
                 return 0
 
@@ -946,7 +946,7 @@ class loong64_processor_t(processor_t):
                     insn.Op3.type = o_reg
                     insn.Op3.reg = rJ
                 elif opc2 < 0x66: # dbar, ibar
-                    insn.Op1.type = o_reg
+                    insn.Op1.type = o_imm
                     insn.Op1.value = raw & 0x7fff
                 elif opc2 < 0x70: # f{ld,st}{gt,le}.{s,d}
                     insn.Op1.type = o_reg
@@ -1315,12 +1315,12 @@ class loong64_processor_t(processor_t):
         {'name': 'ldpte',     'feature': CF_USE1 | CF_USE2 },
 
         {'name': 'iocsrrd.b', 'feature': CF_CHG1 | CF_USE2 },
-        {'name': 'iocsrrd.w', 'feature': CF_CHG1 | CF_USE2 },
         {'name': 'iocsrrd.h', 'feature': CF_CHG1 | CF_USE2 },
+        {'name': 'iocsrrd.w', 'feature': CF_CHG1 | CF_USE2 },
         {'name': 'iocsrrd.d', 'feature': CF_CHG1 | CF_USE2 },
         {'name': 'iocsrwr.b', 'feature': CF_USE1 | CF_USE2 },
-        {'name': 'iocsrwr.w', 'feature': CF_USE1 | CF_USE2 },
         {'name': 'iocsrwr.h', 'feature': CF_USE1 | CF_USE2 },
+        {'name': 'iocsrwr.w', 'feature': CF_USE1 | CF_USE2 },
         {'name': 'iocsrwr.d', 'feature': CF_USE1 | CF_USE2 },
         {'name': 'tlbclr',    'feature': 0 },
         {'name': 'tlbflush',  'feature': 0 },
@@ -1345,7 +1345,7 @@ class loong64_processor_t(processor_t):
 
         {'name': 'addu16i.d', 'feature': CF_CHG1 | CF_USE2 | CF_USE3 },
         {'name': 'lu12i.w',   'feature': CF_CHG1 | CF_USE2 },
-        {'name': 'lu12i.d',   'feature': CF_CHG1 | CF_USE2 },
+        {'name': 'lu32i.d',   'feature': CF_CHG1 | CF_USE2 },
         {'name': 'pcaddi',    'feature': CF_CHG1 | CF_USE2 },
         {'name': 'pcalau12i', 'feature': CF_CHG1 | CF_USE2 },
         {'name': 'pcaddu12i', 'feature': CF_CHG1 | CF_USE2 },
